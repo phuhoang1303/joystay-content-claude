@@ -208,6 +208,11 @@ export const researchPack = sqliteTable(
     status: text("status", { enum: RESEARCH_PACK_STATUSES }).notNull().default("queued"),
     /** JSON string[] */
     queries: text("queries").notNull().default("[]"),
+    /**
+     * JSON Candidate[] (url, title, score, state pending/done/failed). Lets a retried job resume
+     * without paying for the searches again.
+     */
+    candidates: text("candidates").notNull().default("[]"),
     error: text("error"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

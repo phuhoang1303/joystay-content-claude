@@ -1,0 +1,1 @@
+ALTER TABLE `research_pack` ADD `candidates` text DEFAULT '[]' NOT NULL;
