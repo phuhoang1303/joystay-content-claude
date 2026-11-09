@@ -1,12 +1,12 @@
 # Status
 
-**Current phase:** 0 - Foundation (done, awaiting owner review)
+**Current phase:** 1 - Weekly plan + research (waiting for brief `docs/briefs/phase-1.md`)
 **Last updated:** 2026-11-09
 
 ## Phases
 | Phase | Name | State |
 | --- | --- | --- |
-| 0 | Foundation | done (gate checked 2026-11-09) |
+| 0 | Foundation | done, approved by owner 2026-11-09 |
 | 1 | Weekly plan + research | - |
 | 2 | SEO writing + Sanity publish | - |
 | 3 | Social writing | - |
