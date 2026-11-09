@@ -1,4 +1,5 @@
 import { AI_TEST_JOB, createAiTestHandler } from "./handlers/ai-test";
+import { createPlanHandlers } from "./handlers/plan";
 import { createResearchHandlers } from "./handlers/research";
 import type { JobRegistry } from "./runner";
 
@@ -6,6 +7,7 @@ import type { JobRegistry } from "./runner";
 export function createRegistry(): JobRegistry {
   return {
     [AI_TEST_JOB]: createAiTestHandler(),
+    ...createPlanHandlers(),
     ...createResearchHandlers(),
   };
 }
