@@ -82,10 +82,16 @@ export async function renamePillar(_prev: FormState, fd: FormData): Promise<Form
   return done("Đã đổi tên.");
 }
 
-export async function deletePillar(id: number): Promise<void> {
+/** Returns an error message, or null on success. Pillars used by research packs cannot be deleted. */
+export async function deletePillar(id: number): Promise<string | null> {
   const ws = await getCurrentWorkspace();
-  getDb().delete(pillar).where(and(eq(pillar.id, id), eq(pillar.workspaceId, ws.id))).run();
+  try {
+    getDb().delete(pillar).where(and(eq(pillar.id, id), eq(pillar.workspaceId, ws.id))).run();
+  } catch {
+    return "Không xoá được: chủ đề này đã có gói research trong một tuần. Bạn có thể đổi tên thay vì xoá.";
+  }
   revalidatePath("/cai-dat");
+  return null;
 }
 
 export async function addExamplePost(_prev: FormState, fd: FormData): Promise<FormState> {

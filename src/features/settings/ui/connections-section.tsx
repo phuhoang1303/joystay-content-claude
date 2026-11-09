@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import type { EnvStatus } from "../env-status";
 
 /** Server component. Receives presence booleans only, never values. */
-export function ConnectionsSection({ env }: { env: EnvStatus[] }) {
+export function ConnectionsSection({ env, tavilyCredits }: { env: EnvStatus[]; tavilyCredits: number }) {
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">
@@ -16,6 +16,9 @@ export function ConnectionsSection({ env }: { env: EnvStatus[] }) {
             <span className="flex-1 text-muted-foreground">
               {e.label}
               {e.phase > 0 ? <span className="ml-1 text-xs">(Phase {e.phase})</span> : null}
+              {e.key === "TAVILY_API_KEY" ? (
+                <span className="ml-1 text-xs">· tháng này đã dùng {tavilyCredits} / 1.000 credit miễn phí</span>
+              ) : null}
             </span>
             <Badge variant={e.present ? "default" : "outline"}>{e.present ? "Đã có" : "Chưa có"}</Badge>
           </li>

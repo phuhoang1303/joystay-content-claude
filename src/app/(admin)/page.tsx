@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDashboardData } from "@/features/dashboard/queries";
 import { getCurrentWorkspace } from "@/features/workspace/server";
+import { formatWeekVi } from "@/lib/calendar/week";
 
 const STATUS: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   queued: { label: "Đang chờ", variant: "secondary" },
@@ -12,7 +13,16 @@ const STATUS: Record<string, { label: string; variant: "default" | "secondary" |
   failed: { label: "Thất bại", variant: "destructive" },
 };
 
-const JOB_LABELS: Record<string, string> = { ai_test: "Kiểm tra kết nối Claude" };
+const JOB_LABELS: Record<string, string> = {
+  ai_test: "Kiểm tra kết nối Claude",
+  "plan.generate": "Tạo kế hoạch tuần",
+  "plan.regenerate_item": "Đề xuất lại một bài",
+  "research.pack": "Research gói chủ đề",
+  "research.source": "Xử lý URL dán vào",
+  "research.topup": "Tìm bổ sung",
+};
+
+const PACK_LABELS: Record<string, string> = { queued: "chờ", running: "đang chạy", done: "xong", failed: "lỗi" };
 
 const fmtTime = (d: Date) =>
   d.toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" });
@@ -26,7 +36,46 @@ export default async function DashboardPage() {
     <>
       <PageHeader title="Tổng quan" description={`${ws.name} · ${d.monthLabel}`} />
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="mb-4 grid gap-4 md:grid-cols-2">
+        {d.weeks.map((w, i) => (
+          <Card key={w.weekStart}>
+            <CardHeader>
+              <CardTitle>
+                {i === 0 ? "Tuần này" : "Tuần sau"} · {formatWeekVi(w.weekStart)}
+              </CardTitle>
+              <CardDescription>
+                {w.status === null ? "Chưa có kế hoạch" : w.status === "locked" ? "Đã chốt" : "Bản nháp"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-1 text-sm">
+              {w.status === null ? (
+                <Link href={`/ke-hoach-tuan?week=${w.weekStart}`} className="underline">
+                  Lập kế hoạch
+                </Link>
+              ) : (
+                <>
+                  <p>
+                    {w.seo} bài SEO · {w.social} bài social
+                  </p>
+                  <p className="text-muted-foreground">
+                    Gói research:{" "}
+                    {Object.keys(w.packs).length
+                      ? Object.entries(w.packs)
+                          .map(([s, n]) => `${n} ${PACK_LABELS[s] ?? s}`)
+                          .join(", ")
+                      : "chưa có"}
+                  </p>
+                  <Link href={`/ke-hoach-tuan?week=${w.weekStart}`} className="text-xs underline">
+                    Mở kế hoạch
+                  </Link>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Lượt gọi AI tháng này</CardTitle>
@@ -76,6 +125,21 @@ export default async function DashboardPage() {
             </p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Credit Tavily tháng này</CardTitle>
+            <CardDescription>
+              {d.tavily.used} / {d.tavily.free.toLocaleString("vi-VN")} credit miễn phí
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={d.tavily.used} aria-valuemin={0} aria-valuemax={d.tavily.free}>
+              <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, (d.tavily.used / d.tavily.free) * 100)}%` }} />
+            </div>
+            <p className="text-xs text-muted-foreground">Vượt 1.000 credit sẽ tính phí và áp dụng hạn mức chi phí.</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="mt-4">
@@ -102,7 +166,7 @@ export default async function DashboardPage() {
                       <span className="block truncate text-xs text-destructive">{j.error}</span>
                     ) : null}
                   </span>
-                  <span className="text-xs text-muted-foreground">{fmtTime(j.createdAt)}</span>
+                  <span className="whitespace-nowrap text-xs text-muted-foreground">{fmtTime(j.createdAt)}</span>
                   <Badge variant={STATUS[j.status].variant}>{STATUS[j.status].label}</Badge>
                 </li>
               ))}

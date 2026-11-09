@@ -3,6 +3,7 @@ import { asc, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { brandProfile, examplePost, pillar } from "@/lib/db/schema";
 import { getMonthlyCapUsd, getProviderName } from "@/lib/settings";
+import { monthlyTavilyCredits } from "@/lib/research/tavily-usage";
 import { getEnvStatus } from "./env-status";
 
 export function getSettingsData(workspaceId: number) {
@@ -24,5 +25,6 @@ export function getSettingsData(workspaceId: number) {
     provider: getProviderName(db),
     monthlyPaidCapUsd: getMonthlyCapUsd(db),
     env: getEnvStatus(),
+    tavilyCredits: monthlyTavilyCredits(db),
   };
 }

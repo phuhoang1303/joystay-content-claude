@@ -106,7 +106,7 @@ export default async function SettingsPage() {
             <CardTitle>Kết nối</CardTitle>
           </CardHeader>
           <CardContent>
-            <ConnectionsSection env={data.env} />
+            <ConnectionsSection env={data.env} tavilyCredits={data.tavilyCredits} />
           </CardContent>
         </Card>
       </div>

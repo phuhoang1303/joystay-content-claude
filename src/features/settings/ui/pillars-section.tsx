@@ -76,7 +76,11 @@ function PillarItem({ pillar }: { pillar: PillarRow }) {
         aria-label={`Xoá ${pillar.name}`}
         disabled={deleting}
         onClick={() => {
-          if (confirm(`Xoá chủ đề "${pillar.name}"?`)) startDelete(() => deletePillar(pillar.id));
+          if (!confirm(`Xoá chủ đề "${pillar.name}"?`)) return;
+          startDelete(async () => {
+            const err = await deletePillar(pillar.id);
+            if (err) alert(err);
+          });
         }}
       >
         <Trash2 />
