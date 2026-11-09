@@ -1,6 +1,5 @@
 /** AI planning for a week. Runs in the worker (no server-only imports). */
 import { and, asc, eq, gte, ne } from "drizzle-orm";
-import { z } from "zod";
 import { generateText, type AiProvider } from "@/lib/ai";
 import { addDays, formatDayVi, weekDays } from "@/lib/calendar/week";
 import { eventsInWeek } from "@/lib/calendar/vn-events";
