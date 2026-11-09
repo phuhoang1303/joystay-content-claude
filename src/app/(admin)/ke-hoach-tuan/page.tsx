@@ -25,7 +25,7 @@ export default async function WeekPlanPage({ searchParams }: { searchParams: Pro
       ) : null}
       {data.plan && data.config ? (
         <WeekPlanClient
-          key={`${data.plan.id}-${data.plan.status}`}
+          key={data.plan.id}
           plan={data.plan}
           config={data.config}
           pillars={data.pillars}
