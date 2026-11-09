@@ -31,7 +31,7 @@ export function setSetting<K extends SettingKey>(db: Db, key: K, value: SettingV
     .values({ key, value: json })
     .onConflictDoUpdate({
       target: setting.key,
-      set: { value: json, updatedAt: sql`(unixepoch('subsec') * 1000)` },
+      set: { value: json, updatedAt: sql`(cast(unixepoch('subsec') * 1000 as integer))` },
     })
     .run();
 }

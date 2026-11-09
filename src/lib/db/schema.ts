@@ -4,12 +4,12 @@ import { index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-or
 const createdAt = () =>
   integer("created_at", { mode: "timestamp_ms" })
     .notNull()
-    .default(sql`(unixepoch('subsec') * 1000)`);
+    .default(sql`(cast(unixepoch('subsec') * 1000 as integer))`);
 
 const updatedAt = () =>
   integer("updated_at", { mode: "timestamp_ms" })
     .notNull()
-    .default(sql`(unixepoch('subsec') * 1000)`);
+    .default(sql`(cast(unixepoch('subsec') * 1000 as integer))`);
 
 export const workspace = sqliteTable("workspace", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -96,7 +96,7 @@ export const job = sqliteTable(
     maxAttempts: integer("max_attempts").notNull().default(3),
     runAfter: integer("run_after", { mode: "timestamp_ms" })
       .notNull()
-      .default(sql`(unixepoch('subsec') * 1000)`),
+      .default(sql`(cast(unixepoch('subsec') * 1000 as integer))`),
     startedAt: integer("started_at", { mode: "timestamp_ms" }),
     finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
     createdAt: createdAt(),

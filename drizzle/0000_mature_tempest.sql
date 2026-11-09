@@ -15,7 +15,7 @@ CREATE TABLE `ai_usage` (
 	`duration_ms` integer,
 	`job_id` integer,
 	`content_item_id` integer,
-	`created_at` integer DEFAULT (unixepoch('subsec') * 1000) NOT NULL,
+	`created_at` integer DEFAULT (cast(unixepoch('subsec') * 1000 as integer)) NOT NULL,
 	FOREIGN KEY (`workspace_id`) REFERENCES `workspace`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`job_id`) REFERENCES `job`(`id`) ON UPDATE no action ON DELETE set null
 );
@@ -35,7 +35,7 @@ CREATE TABLE `brand_profile` (
 	`seo_style_rules` text DEFAULT '' NOT NULL,
 	`social_style_rules` text DEFAULT '' NOT NULL,
 	`banned_phrases` text DEFAULT '' NOT NULL,
-	`updated_at` integer DEFAULT (unixepoch('subsec') * 1000) NOT NULL,
+	`updated_at` integer DEFAULT (cast(unixepoch('subsec') * 1000 as integer)) NOT NULL,
 	FOREIGN KEY (`workspace_id`) REFERENCES `workspace`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -49,7 +49,7 @@ CREATE TABLE `example_post` (
 	`body` text,
 	`url` text,
 	`seed_key` text,
-	`created_at` integer DEFAULT (unixepoch('subsec') * 1000) NOT NULL,
+	`created_at` integer DEFAULT (cast(unixepoch('subsec') * 1000 as integer)) NOT NULL,
 	FOREIGN KEY (`workspace_id`) REFERENCES `workspace`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -64,11 +64,11 @@ CREATE TABLE `job` (
 	`error` text,
 	`attempts` integer DEFAULT 0 NOT NULL,
 	`max_attempts` integer DEFAULT 3 NOT NULL,
-	`run_after` integer DEFAULT (unixepoch('subsec') * 1000) NOT NULL,
+	`run_after` integer DEFAULT (cast(unixepoch('subsec') * 1000 as integer)) NOT NULL,
 	`started_at` integer,
 	`finished_at` integer,
-	`created_at` integer DEFAULT (unixepoch('subsec') * 1000) NOT NULL,
-	`updated_at` integer DEFAULT (unixepoch('subsec') * 1000) NOT NULL,
+	`created_at` integer DEFAULT (cast(unixepoch('subsec') * 1000 as integer)) NOT NULL,
+	`updated_at` integer DEFAULT (cast(unixepoch('subsec') * 1000 as integer)) NOT NULL,
 	FOREIGN KEY (`workspace_id`) REFERENCES `workspace`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -79,7 +79,7 @@ CREATE TABLE `pillar` (
 	`workspace_id` integer NOT NULL,
 	`name` text NOT NULL,
 	`sort_order` integer DEFAULT 0 NOT NULL,
-	`created_at` integer DEFAULT (unixepoch('subsec') * 1000) NOT NULL,
+	`created_at` integer DEFAULT (cast(unixepoch('subsec') * 1000 as integer)) NOT NULL,
 	FOREIGN KEY (`workspace_id`) REFERENCES `workspace`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -87,14 +87,14 @@ CREATE UNIQUE INDEX `pillar_ws_name` ON `pillar` (`workspace_id`,`name`);--> sta
 CREATE TABLE `setting` (
 	`key` text PRIMARY KEY NOT NULL,
 	`value` text NOT NULL,
-	`updated_at` integer DEFAULT (unixepoch('subsec') * 1000) NOT NULL
+	`updated_at` integer DEFAULT (cast(unixepoch('subsec') * 1000 as integer)) NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE `workspace` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`slug` text NOT NULL,
 	`name` text NOT NULL,
-	`created_at` integer DEFAULT (unixepoch('subsec') * 1000) NOT NULL
+	`created_at` integer DEFAULT (cast(unixepoch('subsec') * 1000 as integer)) NOT NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `workspace_slug_unique` ON `workspace` (`slug`);
