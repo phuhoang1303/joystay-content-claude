@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently -k -n web,worker -c blue,magenta \"npm:dev:web\" \"npm:dev:worker\"",
-    "dev:web": "next dev",
+    "dev:web": "next dev -H 127.0.0.1",
     "dev:worker": "tsx watch --env-file-if-exists=.env.local scripts/worker.ts",
     "worker": "tsx --env-file-if-exists=.env.local scripts/worker.ts",
     "build": "next build",
