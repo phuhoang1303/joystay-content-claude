@@ -39,4 +39,11 @@ Local web app (localhost) that plans content weekly, researches each week's them
 4. Update `docs/STATUS.md`. Commit with message `phase-N: <what>`. Never push unless asked.
 
 ## Commands
-Fill in during Phase 0 (expected: `npm run dev` starts web + worker, `npm run db:migrate`, `npm run db:seed`, `npm run lint`, `npm run typecheck`, `npm test`).
+Node 22 LTS (`.nvmrc`). On this machine the global Node may be another version: prefix shell commands with the Node 22 install (`nvm-windows` keeps it in `%LOCALAPPDATA%\Author Software\nvm\installs\v22.*`) or run `nvm use 22`; `better-sqlite3` is built for Node 22.
+- `npm run dev` - web (http://localhost:3000, bound to 127.0.0.1) + worker via concurrently
+- `npm run db:generate` - new migration from `src/lib/db/schema.ts` (commit `drizzle/`)
+- `npm run db:migrate` - apply migrations to `${DATA_DIR}/app.db`
+- `npm run db:seed` - idempotent seed from `docs/` (fills missing rows only)
+- `npm run lint` / `npm run typecheck` / `npm test` - must pass before done
+- `npm run worker` - worker without watch
+- When chaining checks in bash, use `set -o pipefail` so a piped `| tail` cannot hide a failure.
