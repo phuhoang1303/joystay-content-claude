@@ -1,0 +1,21 @@
+# dependencies & build
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# local data (SQLite, downloaded images, renders)
+.data/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
