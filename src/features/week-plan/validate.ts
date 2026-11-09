@@ -3,18 +3,25 @@ import { SOCIAL_FORMATS, type SocialFormat } from "@/lib/db/schema";
 import { isInWeek } from "@/lib/calendar/week";
 import { SOCIAL_FORMAT_LABELS, type WeekConfig } from "./config";
 
+/** Trims, then cuts overly long model text instead of rejecting the whole answer. */
+const clipped = (max: number) =>
+  z
+    .string()
+    .trim()
+    .transform((s) => (s.length > max ? `${s.slice(0, max - 1).trimEnd()}…` : s));
+
 /** One item as the planner model returns it. */
 export const plannedItemSchema = z.object({
   type: z.enum(["seo", "social"]),
   pillar_id: z.number().int(),
-  topic: z.string().trim().min(3).max(200),
-  main_keyword: z.string().trim().max(120).nullish(),
-  angle: z.string().trim().max(500).default(""),
+  topic: clipped(200).pipe(z.string().min(3)),
+  main_keyword: clipped(120).nullish(),
+  angle: clipped(800).default(""),
   social_format: z.enum(SOCIAL_FORMATS).nullish(),
   /** For carousel: 0-based index of the SEO item (among SEO items, in output order) it is cut from. */
   seo_ref: z.number().int().min(0).nullish(),
   publish_date: z.string(),
-  reason: z.string().trim().max(500).default(""),
+  reason: clipped(500).default(""),
 });
 export type PlannedItem = z.infer<typeof plannedItemSchema>;
 

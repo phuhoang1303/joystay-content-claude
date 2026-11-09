@@ -154,3 +154,69 @@ describe("regenerateItem", () => {
     expect(provider.calls[0].prompt).toContain("Bánh mì ngon Quận 3");
   });
 });
+
+describe("lockWeek", () => {
+  it("creates one pack per SEO pillar, links items, and only adds missing packs on re-lock", async () => {
+    const { lockWeek, unlockWeek } = await import("@/features/week-plan/lock");
+    const { job, researchPack } = await import("@/lib/db/schema");
+    const { db, workspaceId } = setupDb();
+    const { pillars, planId } = setup(db, workspaceId);
+    await generateWeekPlan({ db, provider: createFakeProvider({ reply: JSON.stringify({ items: goodPlan(pillars) }) }) }, planId);
+
+    const first = lockWeek(db, planId);
+    expect(first.packsCreated).toBe(2);
+    expect(db.select().from(weekPlan).get()!.status).toBe("locked");
+    const packs = db.select().from(researchPack).all();
+    expect(packs.map((p) => p.pillarId).sort()).toEqual([pillars[0], pillars[1]].sort());
+    expect(db.select().from(job).all().map((j) => j.type)).toEqual(["research.pack", "research.pack"]);
+
+    const items = db.select().from(contentItem).all();
+    const carousel = items.find((i) => i.socialFormat === "carousel")!;
+    expect(carousel.researchPackId).toBe(packs.find((p) => p.pillarId === pillars[0])!.id);
+    const joystaySocial = items.find((i) => i.pillarId === pillars[2])!;
+    expect(joystaySocial.researchPackId).toBeNull(); // no SEO pack for that pillar
+
+    unlockWeek(db, planId);
+    db.insert(contentItem)
+      .values({ workspaceId, weekPlanId: planId, type: "seo", pillarId: pillars[2], topic: "Phòng J5", mainKeyword: "homestay quận 3", publishDate: "2026-11-22" })
+      .run();
+    const second = lockWeek(db, planId);
+    expect(second.packsCreated).toBe(1);
+    expect(db.select().from(researchPack).all()).toHaveLength(3);
+    expect(db.select().from(job).all()).toHaveLength(3);
+  });
+
+  it("refuses to lock with incomplete items", async () => {
+    const { lockWeek } = await import("@/features/week-plan/lock");
+    const { db, workspaceId } = setupDb();
+    const { pillars, planId } = setup(db, workspaceId);
+    db.insert(contentItem).values({ workspaceId, weekPlanId: planId, type: "seo", pillarId: pillars[0], topic: "X", publishDate: WEEK }).run();
+    expect(() => lockWeek(db, planId)).toThrow(/thiếu đề tài hoặc từ khoá/);
+    expect(db.select().from(weekPlan).get()!.status).toBe("draft");
+  });
+});
+
+describe("parseSingleItem", () => {
+  it("accepts item, items[0] or a bare object", async () => {
+    const { parseSingleItem } = await import("@/features/week-plan/generate");
+    const one = { pillar_id: 1, topic: "Đề tài mới", main_keyword: null, angle: "", reason: "r" };
+    expect(parseSingleItem(JSON.stringify({ item: one }))?.topic).toBe("Đề tài mới");
+    expect(parseSingleItem(JSON.stringify({ items: [{ ...one, type: "social", social_format: "Góc nhìn" }] }))?.topic).toBe("Đề tài mới");
+    expect(parseSingleItem(JSON.stringify(one))?.topic).toBe("Đề tài mới");
+    expect(parseSingleItem("{}")).toBeNull();
+    expect(parseSingleItem("không phải json")).toBeNull();
+  });
+});
+
+describe("plannedItemSchema", () => {
+  it("clips long angle/reason instead of rejecting", async () => {
+    const { plannedItemSchema } = await import("@/features/week-plan/validate");
+    const r = plannedItemSchema.parse({
+      type: "social", pillar_id: 1, topic: "Đề tài", angle: "a".repeat(1200), reason: "b".repeat(900),
+      social_format: "goc_nhin", publish_date: "2026-11-20",
+    });
+    expect(r.angle.length).toBe(800);
+    expect(r.reason.length).toBe(500);
+    expect(r.angle.endsWith("…")).toBe(true);
+  });
+});

@@ -15,16 +15,16 @@ export type VnEvent = {
 /** Same solar date every year (month, day). */
 const FIXED_SOLAR: { month: number; day: number; name: string; note?: string }[] = [
   { month: 1, day: 1, name: "Tết Dương lịch", note: "nghỉ lễ, du lịch ngắn ngày" },
-  { month: 2, day: 14, name: "Lễ Tình nhân (Valentine)", note: "cặp đôi, staycation" },
-  { month: 3, day: 8, name: "Quốc tế Phụ nữ 8/3" },
+  { month: 2, day: 14, name: "Lễ Tình nhân (Valentine)", note: "cặp đôi, staycation; không phải ngày nghỉ lễ" },
+  { month: 3, day: 8, name: "Quốc tế Phụ nữ 8/3", note: "không phải ngày nghỉ lễ" },
   { month: 4, day: 30, name: "Ngày Giải phóng miền Nam 30/4", note: "kỳ nghỉ lễ dài, cao điểm du lịch" },
   { month: 5, day: 1, name: "Quốc tế Lao động 1/5", note: "nối kỳ nghỉ 30/4" },
   { month: 9, day: 2, name: "Quốc khánh 2/9", note: "kỳ nghỉ lễ" },
-  { month: 10, day: 20, name: "Ngày Phụ nữ Việt Nam 20/10" },
-  { month: 10, day: 31, name: "Halloween" },
-  { month: 11, day: 20, name: "Ngày Nhà giáo Việt Nam 20/11" },
-  { month: 12, day: 24, name: "Đêm Giáng sinh", note: "Sài Gòn trang trí, đi chơi đêm" },
-  { month: 12, day: 25, name: "Lễ Giáng sinh" },
+  { month: 10, day: 20, name: "Ngày Phụ nữ Việt Nam 20/10", note: "không phải ngày nghỉ lễ" },
+  { month: 10, day: 31, name: "Halloween", note: "không phải ngày nghỉ lễ" },
+  { month: 11, day: 20, name: "Ngày Nhà giáo Việt Nam 20/11", note: "tri ân thầy cô; không phải ngày nghỉ lễ" },
+  { month: 12, day: 24, name: "Đêm Giáng sinh", note: "Sài Gòn trang trí, đi chơi đêm; không phải ngày nghỉ lễ" },
+  { month: 12, day: 25, name: "Lễ Giáng sinh", note: "không phải ngày nghỉ lễ" },
 ];
 
 /**

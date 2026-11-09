@@ -16,7 +16,7 @@ export class PlanError extends Error {
   readonly retryable = false;
 }
 
-export const PLAN_SYSTEM = `Bạn là biên tập viên nội dung của một homestay boutique ở Quận 3, TP.HCM. Bạn lập kế hoạch nội dung cho một tuần: bài SEO tiếng Việt cho blog và bài Facebook giọng người thật.
+const PLAN_RULES = `Bạn là biên tập viên nội dung của một homestay boutique ở Quận 3, TP.HCM. Bạn lập kế hoạch nội dung cho một tuần: bài SEO tiếng Việt cho blog và bài Facebook giọng người thật.
 Nguyên tắc:
 - Mỗi đề tài cụ thể, hữu ích cho khách du lịch và người ở Sài Gòn, gắn với khu vực Quận 3 khi hợp lý. Không quảng cáo lộ liễu.
 - Không lặp lại đề tài đã dùng trong 90 ngày qua.
@@ -24,7 +24,9 @@ Nguyên tắc:
 - Bài SEO cần main_keyword là cụm từ người Việt thực sự tìm kiếm (2-6 từ).
 - Bài carousel phải dùng lại chủ đề của một bài SEO cùng tuần (seo_ref là vị trí của bài SEO đó trong danh sách các bài SEO, bắt đầu từ 0) và đăng cùng ngày hoặc sau bài SEO đó.
 - Mỗi kênh tối đa một bài mỗi ngày, rải đều trong tuần.
-- "reason": một câu giải thích vì sao chọn đề tài này cho tuần này.
+- "reason": một câu giải thích vì sao chọn đề tài này cho tuần này. Chỉ nêu sự thật (ví dụ không gọi một ngày là ngày nghỉ nếu không phải).`;
+
+export const PLAN_SYSTEM = `${PLAN_RULES}
 Trả về JSON: {"items": [{"type": "seo"|"social", "pillar_id": number, "topic": string, "main_keyword": string|null, "angle": string, "social_format": "khoanh_khac"|"goc_nhin"|"carousel"|null, "seo_ref": number|null, "publish_date": "YYYY-MM-DD", "reason": string}]}`;
 
 type PlanContext = {
@@ -165,7 +167,25 @@ export async function generateWeekPlan(deps: PlanDeps, weekPlanId: number) {
   return { items: items.length };
 }
 
-const singleItemSchema = z.object({ item: plannedItemSchema.omit({ seo_ref: true, publish_date: true, type: true }) });
+/** Type, date and social format are kept from the existing card, so they are not read. */
+const singleItemSchema = plannedItemSchema.pick({ pillar_id: true, topic: true, main_keyword: true, angle: true, reason: true });
+
+export const REGENERATE_SYSTEM = `${PLAN_RULES}
+Lần này chỉ đề xuất lại MỘT bài. Trả về JSON: {"item": {"pillar_id": number, "topic": string, "main_keyword": string|null, "angle": string, "reason": string}}`;
+
+/** Accepts {"item": {...}}, {"items": [{...}]} or the bare object. */
+export function parseSingleItem(text: string) {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  const o = raw as { item?: unknown; items?: unknown[] };
+  const candidate = o?.item ?? (Array.isArray(o?.items) ? o.items[0] : raw);
+  const r = singleItemSchema.safeParse(candidate);
+  return r.success ? r.data : null;
+}
 
 /** plan.regenerate_item: a new topic for one card; keeps type, date, format and the other cards. */
 export async function regenerateItem(deps: PlanDeps, itemId: number) {
@@ -190,16 +210,14 @@ ${others.map(describe).join("\n") || "- không có"}
 ${describe(item)}
 Hãy đề xuất MỘT đề tài khác cho bài này: cùng loại (${item.type})${item.socialFormat ? `, cùng định dạng ${item.socialFormat}` : ""}, cùng ngày ${item.publishDate}. Không trùng đề tài cũ "${item.topic}" và không trùng các bài khác.${
     item.socialFormat === "carousel" ? ` Carousel phải dùng lại chủ đề của một bài SEO trong tuần: ${seoTopics.join("; ") || "(chưa có bài SEO)"}.` : ""
-  }${item.type === "seo" ? " Cần main_keyword." : ""}
-Trả về JSON: {"item": {"pillar_id": number, "topic": string, "main_keyword": string|null, "angle": string, "social_format": string|null, "reason": string}}`;
+  }${item.type === "seo" ? " Cần main_keyword." : " main_keyword để null."}`;
 
   const r = await generateText(
     { db: deps.db, workspaceId: item.workspaceId, step: "plan.regenerate_item", jobId: deps.jobId, contentItemId: item.id, provider: deps.provider, signal: deps.signal },
-    { tier: "smart", system: PLAN_SYSTEM, prompt, json: true },
+    { tier: "smart", system: REGENERATE_SYSTEM, prompt, json: true },
   );
-  const parsed = singleItemSchema.safeParse(JSON.parse(r.text));
-  if (!parsed.success) throw new PlanError("AI trả về đề xuất không đúng cấu trúc. Hãy thử lại.");
-  const next = parsed.data.item;
+  const next = parseSingleItem(r.text);
+  if (!next) throw new PlanError("AI trả về đề xuất không đúng cấu trúc. Hãy thử lại.");
   if (item.type === "seo" && !next.main_keyword) throw new PlanError("Đề xuất mới thiếu từ khoá chính. Hãy thử lại.");
   const pillarOk = ctx.pillars.some((p) => p.id === next.pillar_id);
   deps.db
