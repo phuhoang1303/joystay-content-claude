@@ -4,7 +4,7 @@ import { getEnvStatus } from "@/features/settings/env-status";
 describe("getEnvStatus", () => {
   it("reports presence only and never includes values", () => {
     const secret = "sk-canary-should-never-appear";
-    const status = getEnvStatus({ TAVILY_API_KEY: secret, OPENAI_API_KEY: "  " } as NodeJS.ProcessEnv);
+    const status = getEnvStatus({ TAVILY_API_KEY: secret, OPENAI_API_KEY: "  " } as unknown as NodeJS.ProcessEnv);
 
     expect(status.find((s) => s.key === "TAVILY_API_KEY")?.present).toBe(true);
     expect(status.find((s) => s.key === "OPENAI_API_KEY")?.present).toBe(false);
